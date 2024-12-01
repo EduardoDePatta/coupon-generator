@@ -19,13 +19,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-      - name: npm install
-        env:
-          CI: true
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npx tsc
+      - name: Package
         run: |
-          npm ci
-      - name: deploy
+          cd dist
+          zip -r function.zip *
+          cd ..
+      - name: Deploy
         run: |
-          npx ncc build index.ts
-          zip -j deploy.zip ./dist/*
-          aws lambda update-function-code --function-name=coupon --zip-file=fileb://deploy.zip
+          aws lambda update-function-code --function-name=coupon --zip-file=fileb://dist/function.zip
