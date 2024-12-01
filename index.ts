@@ -29,12 +29,12 @@ interface ValidateEndpoint {
 const dynamoDb = new DynamoDB.DocumentClient()
 const dyamoDbTableName: string = 'coupons'
 
-const getCoupons = async ({ regionId, userId }: GetCouponsParams): Promise<BuildResponse> => {
+const getCoupons = async ({ regionId, couponId }: GetCouponsParams): Promise<BuildResponse> => {
   const params = {
     TableName: dyamoDbTableName,
     Key: {
-      regionId: regionId,
-      userId: userId
+      regionId,
+      couponId
     }
   }
 
@@ -84,7 +84,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
       response = buildResponse({ statusCode: 200 })
       break
     case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPONS }):
-      response = await getCoupons({ userId: event.queryStringParameters?.userId, regionId: event.queryStringParameters?.regionId })
+      response = await getCoupons({ couponId: event.queryStringParameters?.couponId, regionId: event.queryStringParameters?.regionId })
       break
     case validateEndpoint(event, { method: METHOD.POST, path: PATH.COUPON }):
       response = await postCoupon({ coupon: event.body })
@@ -108,6 +108,6 @@ const buildResponse = ({ body, statusCode }: BuildResponse) => {
 }
 
 interface GetCouponsParams {
-  userId?: string
+  couponId?: string
   regionId?: string
 }
