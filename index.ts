@@ -66,7 +66,13 @@ const postCoupon = async ({ coupon }: { coupon: any }) => {
 }
 
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
-  let response: BuildResponse = { statusCode: 403, body: { method: event.httpMethod, path: event.path } }
+  let response: BuildResponse = {
+    statusCode: 403,
+    body: JSON.stringify({
+      method: event.httpMethod,
+      path: event.path
+    })
+  }
   console.log(event.httpMethod, event.path)
 
   switch (true) {
