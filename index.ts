@@ -29,43 +29,6 @@ interface ValidateEndpoint {
 const dynamoDb = new DynamoDB.DocumentClient()
 const dyamoDbTableName: string = 'coupons'
 
-export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
-  let response: BuildResponse = { statusCode: 403 }
-  console.log(event.httpMethod, event.path)
-
-  switch (true) {
-    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPON }):
-      response = buildResponse({ statusCode: 200 })
-      break
-    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPONS }):
-      response = await getCoupons({ userId: event.queryStringParameters?.userId, regionId: event.queryStringParameters?.regionId })
-      break
-    case validateEndpoint(event, { method: METHOD.POST, path: PATH.COUPON }):
-      response = await postCoupon({ coupon: event.body })
-  }
-
-  return response
-}
-
-const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint) => {
-  return event.httpMethod === method && event.path === path
-}
-
-const buildResponse = ({ body, statusCode }: BuildResponse) => {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  }
-}
-
-interface GetCouponsParams {
-  userId?: string
-  regionId?: string
-}
-
 const getCoupons = async ({ regionId, userId }: GetCouponsParams): Promise<BuildResponse> => {
   const params = {
     TableName: dyamoDbTableName,
@@ -100,4 +63,41 @@ const postCoupon = async ({ coupon }: { coupon: any }) => {
       }
       return buildResponse({ statusCode: 200, body })
     })
+}
+
+export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
+  let response: BuildResponse = { statusCode: 403, body: { method: event.httpMethod, path: event.path } }
+  console.log(event.httpMethod, event.path)
+
+  switch (true) {
+    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPON }):
+      response = buildResponse({ statusCode: 200 })
+      break
+    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPONS }):
+      response = await getCoupons({ userId: event.queryStringParameters?.userId, regionId: event.queryStringParameters?.regionId })
+      break
+    case validateEndpoint(event, { method: METHOD.POST, path: PATH.COUPON }):
+      response = await postCoupon({ coupon: event.body })
+  }
+
+  return response
+}
+
+const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint) => {
+  return event.httpMethod === method && event.path === path
+}
+
+const buildResponse = ({ body, statusCode }: BuildResponse) => {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }
+}
+
+interface GetCouponsParams {
+  userId?: string
+  regionId?: string
 }
