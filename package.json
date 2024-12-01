@@ -1,14 +1,22 @@
 {
-  "name": "coupon-generator",
-  "version": "0.0.1",
+  "name": "coupons",
+  "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "keywords": [],
-  "author": "Eduardo Giacometti De Patta",
+  "author": "",
   "license": "ISC",
+  "description": "",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.146",
+    "@types/aws-sdk": "^0.0.42",
     "@types/node": "^22.10.1",
     "@vercel/ncc": "^0.38.3",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
   }
 }

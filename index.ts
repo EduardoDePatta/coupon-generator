@@ -1,24 +1,100 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda'
-import { createCoupon } from './functions/createCoupon/handler'
+import { config, DynamoDB } from 'aws-sdk'
 
-type RouteKey = `${string}:${string}`
+config.update({
+  region: 'eu-north-1'
+})
 
-const routeHandlers: Record<RouteKey, Handler> = {
-  '/coupons:GET': createCoupon
+interface BuildResponse<T = any> {
+  statusCode: number
+  body?: T
 }
 
-export const handler: Handler = async (event: APIGatewayProxyEvent, context, callback): Promise<APIGatewayProxyResultV2> => {
-  const { path, httpMethod } = event
+enum METHOD {
+  GET = 'GET',
+  POST = 'POST',
+  PATCH = 'PATCH'
+}
 
-  const routeKey = `${path}:${httpMethod}` as RouteKey
-  const routeHandler = routeHandlers[routeKey]
+enum PATH {
+  COUPONS = '/coupons',
+  COUPON = '/coupon'
+}
 
-  if (routeHandler) {
-    return await routeHandler(event, context, callback)
-  } else {
-    return {
-      statusCode: 404,
-      body: 'Not Found'
+interface ValidateEndpoint {
+  method: METHOD
+  path: PATH
+}
+
+const dynamoDb = new DynamoDB.DocumentClient()
+const dyamoDbTableName: string = 'coupons'
+
+export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
+  let response: BuildResponse = { statusCode: 403 }
+
+  switch (true) {
+    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPON }):
+      response = buildResponse({ statusCode: 200 })
+      break
+    case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPONS }):
+      response = await getCoupons({ userId: event.queryStringParameters?.userId, regionId: event.queryStringParameters?.regionId })
+      break
+  }
+
+  return response
+}
+
+const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint) => {
+  return event.httpMethod === method && event.path === path
+}
+
+const buildResponse = ({ body, statusCode }: BuildResponse) => {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }
+}
+
+interface GetCouponsParams {
+  userId?: string
+  regionId?: string
+}
+
+const getCoupons = async ({ regionId, userId }: GetCouponsParams): Promise<BuildResponse> => {
+  const params = {
+    TableName: dyamoDbTableName,
+    Key: {
+      regionId: regionId,
+      userId: userId
     }
   }
+
+  const response = await dynamoDb
+    .get(params)
+    .promise()
+    .then((response) => {
+      return buildResponse({ statusCode: 200, body: response.Item })
+    })
+  return response
+}
+
+const postCoupon = async ({ coupon }: { coupon: any }) => {
+  const params = {
+    TableName: dyamoDbTableName,
+    Item: coupon
+  }
+  return await dynamoDb
+    .put(params)
+    .promise()
+    .then(() => {
+      const body = {
+        Operation: 'SAVE',
+        Message: 'SUCCESS',
+        Item: coupon
+      }
+      return buildResponse({ statusCode: 200, body })
+    })
 }

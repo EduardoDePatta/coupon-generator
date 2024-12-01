@@ -1,7 +1,16 @@
 {
   "compilerOptions": {
     "target": "ES2015",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./", // A raiz do projeto
+    "strict": true,
+    "esModuleInterop": true
   },
-  "include": ["functions/**/*"]
+  "include": [
+    "index.ts" // Inclua o arquivo que você quer compilar
+  ],
+  "exclude": [
+    "node_modules" // Exclua node_modules da compilação
+  ]
 }
