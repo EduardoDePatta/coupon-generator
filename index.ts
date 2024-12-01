@@ -48,9 +48,13 @@ const getCoupons = async ({ regionId, userId }: GetCouponsParams): Promise<Build
 }
 
 const postCoupon = async ({ coupon }: { coupon: any }) => {
+  console.log('🚀 ~ postCoupon ~ coupon:', coupon)
   const params = {
     TableName: dyamoDbTableName,
-    Item: coupon
+    Item: {
+      ...coupon,
+      couponId: coupon.couponId
+    }
   }
   return await dynamoDb
     .put(params)
@@ -89,7 +93,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
   return response
 }
 
-const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint) => {
+const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint): boolean => {
   return event.httpMethod === method && event.path === path
 }
 
