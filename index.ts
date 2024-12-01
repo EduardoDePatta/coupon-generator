@@ -1,9 +1,3 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda'
+import { createCoupon } from './api/coupons'
 
-export const createCoupon: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
-  const response = {
-    statusCode: 200,
-    body: 'Hello from lambda! 123'
-  }
-  return response
-}
+export { createCoupon }
