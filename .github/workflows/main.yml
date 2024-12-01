@@ -23,11 +23,8 @@ jobs:
         run: npm ci
       - name: Build
         run: npx tsc
-      - name: Package
-        run: |
-          cd dist
-          zip -r function.zip *
-          cd ..
       - name: Deploy
         run: |
+          npx ncc build index.ts
+          zip -j deploy.zip ./dist/index.js
           aws lambda update-function-code --function-name=coupon --zip-file=fileb://dist/function.zip
