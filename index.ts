@@ -29,6 +29,20 @@ interface ValidateEndpoint {
 const dynamoDb = new DynamoDB.DocumentClient()
 const dyamoDbTableName: string = 'coupons'
 
+const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint): boolean => {
+  return event.httpMethod === method && event.path === path
+}
+
+const buildResponse = ({ body, statusCode }: BuildResponse) => {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }
+}
+
 const getCoupons = async ({ regionId, couponId }: GetCouponsParams): Promise<BuildResponse> => {
   const params = {
     TableName: dyamoDbTableName,
@@ -51,10 +65,7 @@ const postCoupon = async ({ coupon }: { coupon: any }) => {
   console.log('🚀 ~ postCoupon ~ coupon:', coupon)
   const params = {
     TableName: dyamoDbTableName,
-    Item: {
-      ...coupon,
-      couponId: coupon.couponId
-    }
+    Item: coupon
   }
   return await dynamoDb
     .put(params)
@@ -66,6 +77,10 @@ const postCoupon = async ({ coupon }: { coupon: any }) => {
         Item: coupon
       }
       return buildResponse({ statusCode: 200, body })
+    })
+    .catch((error) => {
+      console.error('put error:', error)
+      return buildResponse({ statusCode: 500, body: { error: 'internal server error ' + error } })
     })
 }
 
@@ -87,24 +102,20 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
       response = await getCoupons({ couponId: event.queryStringParameters?.couponId, regionId: event.queryStringParameters?.regionId })
       break
     case validateEndpoint(event, { method: METHOD.POST, path: PATH.COUPON }):
-      response = await postCoupon({ coupon: event.body })
+      try {
+        const body = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf-8') : event.body
+        const coupon = JSON.parse(body || '{}')
+        console.log('Coupon Decoded:', coupon)
+
+        response = await postCoupon({ coupon })
+      } catch (error) {
+        console.error('Error Parsing Body:', error)
+        response = buildResponse({ statusCode: 400, body: { error: 'Invalid JSON body' } })
+      }
+      break
   }
 
   return response
-}
-
-const validateEndpoint = (event: APIGatewayProxyEvent, { method, path }: ValidateEndpoint): boolean => {
-  return event.httpMethod === method && event.path === path
-}
-
-const buildResponse = ({ body, statusCode }: BuildResponse) => {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  }
 }
 
 interface GetCouponsParams {
