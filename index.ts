@@ -31,6 +31,7 @@ const dyamoDbTableName: string = 'coupons'
 
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
   let response: BuildResponse = { statusCode: 403 }
+  console.log(event.httpMethod, event.path)
 
   switch (true) {
     case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPON }):
