@@ -26,6 +26,6 @@ jobs:
           npm ci
       - name: deploy
         run: |
-          npx tsc
+          npx ncc build index.ts
           zip -j deploy.zip ./dist/*
           aws lambda update-function-code --function-name=serverless --zip-file=fileb://deploy.zip
