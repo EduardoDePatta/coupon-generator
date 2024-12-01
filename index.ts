@@ -40,6 +40,8 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     case validateEndpoint(event, { method: METHOD.GET, path: PATH.COUPONS }):
       response = await getCoupons({ userId: event.queryStringParameters?.userId, regionId: event.queryStringParameters?.regionId })
       break
+    case validateEndpoint(event, { method: METHOD.POST, path: PATH.COUPON }):
+      response = await postCoupon({ coupon: event.body })
   }
 
   return response
