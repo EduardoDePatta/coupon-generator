@@ -24,7 +24,7 @@ class AuthUtil {
       throw new Error('HMAC is not defined in environment variables')
     }
 
-    const payload = Buffer.from(JSON.stringify(data)).toString('base64')
+    const payload = JSON.stringify(data)
     const compressedPayload = compressToken(payload)
     const signature = crypto.createHmac('sha256', secret).update(compressedPayload).digest('hex')
     return `${compressedPayload}.${signature}`
@@ -37,16 +37,16 @@ class AuthUtil {
       return { valid: false, error: 'Invalid token format' }
     }
 
-    const payload = decompressToken(compressedPayload)
     const expectedSignature = crypto.createHmac('sha256', secret).update(compressedPayload).digest('hex')
     if (expectedSignature !== signature) {
       return { valid: false, error: 'Invalid token signature' }
     }
 
     try {
+      const payload = decompressToken(compressedPayload)
       const data = JSON.parse(payload)
       return { valid: true, data }
-    } catch {
+    } catch (error) {
       return { valid: false, error: 'Invalid token payload' }
     }
   }
