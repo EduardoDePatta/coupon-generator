@@ -1,12 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda'
 import { config } from 'aws-sdk'
-import { METHOD, PATH, BuildResponse } from './models'
-import { buildResponse } from './utils/responseBuilder'
 import { getCoupon, postCoupon } from './services/coupon'
+import { BuildHttpResponse, BuildResponse, METHOD, PATH, RequestUtil } from './utils'
 
 config.update({ region: 'eu-north-1' })
 
-type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildResponse>
+type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildHttpResponse>
 
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
@@ -20,11 +19,14 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.POST]: {
     [PATH.COUPON]: async (event) => {
       try {
-        const body = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf-8') : event.body
-        const coupon = JSON.parse(body || '{}')
+        const coupon = RequestUtil.parseRequestBody(event)
         return await postCoupon({ coupon })
       } catch (error) {
-        return buildResponse({ statusCode: 400, body: { error: 'Invalid JSON body' } })
+        return RequestUtil.buildResponse({
+          statusCode: 400,
+          message: 'Invalid JSON data',
+          data: {}
+        })
       }
     }
   }
@@ -40,5 +42,9 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     }
   }
 
-  return buildResponse({ statusCode: 404, body: { error: 'Not Found' } })
+  return RequestUtil.buildResponse({
+    statusCode: 404,
+    message: 'Not Found',
+    data: { error: 'Not Found' }
+  })
 }
