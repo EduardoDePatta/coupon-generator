@@ -1,21 +1,24 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { AuthUtil, BuildHttpResponse, METHOD, PATH, RequestUtil } from '../utils'
+import { BuildHttpResponse, METHOD, PATH, RequestUtil } from '../utils'
 import { serviceFactory } from './../services/factory/ServiceFactory'
+import { withAuthentication } from '../middlewares/withAuthentication'
 
 type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildHttpResponse>
 
+const verifyTokenMiddleware = serviceFactory.verifyToken()
+
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
-    [PATH.COUPON]: async (event) => {
+    [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event, user) => {
       const getCouponService = serviceFactory.getCouponService()
       return await getCouponService.execute({
         couponId: event.queryStringParameters?.couponId,
-        userId: event.queryStringParameters?.userId
+        userId: user.userId
       })
-    }
+    })
   },
   [METHOD.POST]: {
-    [PATH.COUPON]: async (event) => {
+    [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event) => {
       try {
         const coupon = RequestUtil.parseRequestBody(event)
         const postCouponService = serviceFactory.postCouponService()
@@ -27,8 +30,8 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
           data: {}
         })
       }
-    },
-    [PATH.REDEEM]: async (event) => {
+    }),
+    [PATH.REDEEM]: withAuthentication(verifyTokenMiddleware, async (event) => {
       try {
         const redeemCouponService = serviceFactory.redeemCouponService()
         return await redeemCouponService.execute({
@@ -43,7 +46,7 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
           data: {}
         })
       }
-    },
+    }),
     [PATH.LOGIN]: async (event) => {
       try {
         const loginParams = RequestUtil.parseRequestBody(event)

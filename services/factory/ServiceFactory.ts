@@ -1,6 +1,7 @@
 import { IValidatorUtil, IAuthUtil, ValidatorUtil, AuthUtil } from './../../utils'
 import { GetCouponService, IGetCouponService, IPostCouponService, IRedeemCouponService, PostCouponService, RedeemCouponService } from './../coupon'
 import { ILoginService, LoginService } from './../auth'
+import { IVerifyTokenMiddleware, VerifyTokenMiddleware } from './../../middlewares'
 
 class ServiceFactory {
   private validator: IValidatorUtil
@@ -25,6 +26,10 @@ class ServiceFactory {
 
   public loginService(): ILoginService {
     return new LoginService(this.validator, this.auth)
+  }
+
+  public verifyToken(): IVerifyTokenMiddleware {
+    return new VerifyTokenMiddleware(this.auth)
   }
 }
 
