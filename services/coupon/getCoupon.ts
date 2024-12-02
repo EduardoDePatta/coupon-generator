@@ -2,7 +2,6 @@ import { dynamoDb, Tables } from '../../db'
 import { AuthUtil, RequestUtil, ValidationRules, ValidatorUtil } from '../../utils'
 import * as QRCode from 'qrcode'
 import { Coupon } from './postCoupon'
-
 export interface GetCouponParams {
   couponId?: string
   regionId?: string
@@ -74,6 +73,7 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
     const redeemUrl = `https://l3fvh570eh.execute-api.eu-north-1.amazonaws.com/production/redeem?token=${encodeURIComponent(coupon.token)}`
     console.log('🚀 ~ getCoupon ~ redeemUrl:', redeemUrl)
     const qrCodeData = await QRCode.toDataURL(redeemUrl)
+    console.log('🚀 ~ getCoupon ~ qrCodeData:', qrCodeData)
 
     return RequestUtil.buildResponse({
       statusCode: 200,
