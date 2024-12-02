@@ -1,5 +1,6 @@
 import { IValidatorUtil, IAuthUtil, ValidatorUtil, AuthUtil } from './../../utils'
 import { GetCouponService, IGetCouponService, IPostCouponService, IRedeemCouponService, PostCouponService, RedeemCouponService } from './../coupon'
+import { ILoginService, LoginService } from './../auth'
 
 class ServiceFactory {
   private validator: IValidatorUtil
@@ -20,6 +21,10 @@ class ServiceFactory {
 
   public redeemCouponService(): IRedeemCouponService {
     return new RedeemCouponService(this.validator, this.auth)
+  }
+
+  public loginService(): ILoginService {
+    return new LoginService(this.validator, this.auth)
   }
 }
 

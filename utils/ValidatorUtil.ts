@@ -1,6 +1,14 @@
 const ValidationRules = {
   isPositiveNumber: (value: any): string | null => (typeof value !== 'number' || value <= 0 ? 'must be a positive number' : null),
-  isNonEmptyString: (value: any): string | null => (typeof value !== 'string' || value.trim() === '' ? 'must be a non-empty string' : null)
+  isNonEmptyString: (value: any): string | null => (typeof value !== 'string' || value.trim() === '' ? 'must be a non-empty string' : null),
+  isEmail: (value: any): string | null => {
+    if (typeof value !== 'string') {
+      return 'must be a string'
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(value) ? null : 'must be a valid email address'
+  }
 }
 
 interface IValidatorUtil {

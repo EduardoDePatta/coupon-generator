@@ -1,3 +1,4 @@
 export const Tables = {
-  COUPONS: 'coupons'
+  COUPONS: 'coupons',
+  USERS: 'users'
 }

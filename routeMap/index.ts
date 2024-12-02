@@ -43,6 +43,19 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
           data: {}
         })
       }
+    },
+    [PATH.LOGIN]: async (event) => {
+      try {
+        const loginParams = RequestUtil.parseRequestBody(event)
+        const loginService = serviceFactory.loginService()
+        return await loginService.execute(loginParams)
+      } catch (error) {
+        return RequestUtil.buildResponse({
+          statusCode: 400,
+          message: 'Invalid login request',
+          data: {}
+        })
+      }
     }
   }
 }

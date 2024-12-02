@@ -12,6 +12,8 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.146",
     "@types/aws-sdk": "^0.0.42",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.10.1",
     "@types/qrcode": "^1.5.5",
     "@vercel/ncc": "^0.38.3",
@@ -19,6 +21,8 @@
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
     "qrcode": "^1.5.4",
     "uuid": "^11.0.3"
   }

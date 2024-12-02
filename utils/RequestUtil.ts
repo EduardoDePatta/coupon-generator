@@ -9,7 +9,8 @@ export enum METHOD {
 export enum PATH {
   COUPONS = '/coupons',
   COUPON = '/coupon',
-  REDEEM = '/redeem'
+  REDEEM = '/redeem',
+  LOGIN = '/login'
 }
 
 export interface BuildResponse<T = any> {

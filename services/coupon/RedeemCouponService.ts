@@ -1,6 +1,5 @@
 import { dynamoDb, Tables } from '../../db'
 import { BuildHttpResponse, IAuthUtil, IValidatorUtil, RequestUtil, ValidationRules } from './../../utils'
-import { Coupon } from './interfaces'
 
 enum ErrorType {
   ConditionalCheckFailedException = 'ConditionalCheckFailedException'

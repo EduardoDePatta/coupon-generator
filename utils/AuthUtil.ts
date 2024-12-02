@@ -1,5 +1,7 @@
 import * as crypto from 'crypto'
 import * as zlib from 'zlib'
+import * as jwt from 'jsonwebtoken'
+import * as bcrypt from 'bcryptjs'
 interface ValidateHMACToken {
   valid: boolean
   data?: object
@@ -9,8 +11,56 @@ interface ValidateHMACToken {
 interface IAuthUtil {
   generateHMACToken(data: object): string
   validateHMACToken(token: string): ValidateHMACToken
+  generateJWT(payload: object): string
+  validateJWT(token: string): { valid: boolean; data?: object; error?: string }
+  hashPassword(password: string): Promise<string>
+  comparePassword(password: string, hash: string): Promise<boolean>
 }
 class AuthUtil implements IAuthUtil {
+  generateJWT(payload: object): string {
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined in environment variables')
+    }
+
+    return jwt.sign(payload, secret, { expiresIn: '1h' })
+  }
+
+  validateJWT(token: string): { valid: boolean; data?: object; error?: string } {
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined in environment variables')
+    }
+
+    try {
+      const result = jwt.verify(token, secret)
+
+      if (typeof result !== 'object' || result === null) {
+        return { valid: false, error: 'Invalid JWT payload' }
+      }
+
+      return { valid: true, data: result }
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return { valid: false, error: 'Token has expired' }
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return { valid: false, error: 'Invalid JWT' }
+      }
+
+      return { valid: false, error: 'Unknown error while validating token' }
+    }
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10)
+  }
+
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    return await bcrypt.compare(password, hash)
+  }
+
   generateHMACToken(data: object): string {
     const secret = process.env.HMAC_SECRET
     if (!secret) {
