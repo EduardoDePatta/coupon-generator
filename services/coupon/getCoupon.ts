@@ -68,11 +68,12 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
       })
     }
     console.log('chegou aqui')
+    console.log(coupon)
 
     // rm essa url daqui
     const redeemUrl = `https://l3fvh570eh.execute-api.eu-north-1.amazonaws.com/production/redeem?token=${encodeURIComponent(coupon.token)}`
-    const qrCodeData = await QRCode.toDataURL(redeemUrl)
     console.log('🚀 ~ getCoupon ~ redeemUrl:', redeemUrl)
+    const qrCodeData = await QRCode.toDataURL(redeemUrl)
 
     return RequestUtil.buildResponse({
       statusCode: 200,
