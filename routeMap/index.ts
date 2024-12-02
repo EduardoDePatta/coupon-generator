@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { BuildHttpResponse, METHOD, PATH, RequestUtil } from '../utils'
-import { getCoupon, postCoupon, redeemCoupon } from './../services/coupon'
+import { getCoupon, postCoupon, redeemCoupon } from '../services/coupon'
 
 type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildHttpResponse>
 
@@ -11,19 +11,6 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
         couponId: event.queryStringParameters?.couponId,
         regionId: event.queryStringParameters?.regionId
       })
-    },
-    [PATH.REDEEM]: async (event) => {
-      try {
-        return await redeemCoupon({
-          token: event.queryStringParameters?.token
-        })
-      } catch (error) {
-        return RequestUtil.buildResponse({
-          statusCode: 400,
-          message: 'Invalid JSON data',
-          data: {}
-        })
-      }
     }
   },
   [METHOD.POST]: {
@@ -31,6 +18,19 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
       try {
         const coupon = RequestUtil.parseRequestBody(event)
         return await postCoupon({ coupon })
+      } catch (error) {
+        return RequestUtil.buildResponse({
+          statusCode: 400,
+          message: 'Invalid JSON data',
+          data: {}
+        })
+      }
+    },
+    [PATH.REDEEM]: async (event) => {
+      try {
+        return await redeemCoupon({
+          token: event.queryStringParameters?.token
+        })
       } catch (error) {
         return RequestUtil.buildResponse({
           statusCode: 400,
