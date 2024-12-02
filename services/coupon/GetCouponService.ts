@@ -35,7 +35,7 @@ class GetCouponService implements IGetCouponService {
       if (!response.Item) {
         return RequestUtil.buildResponse({
           statusCode: 404,
-          message: 'Cupom não encontrado',
+          message: 'Coupon not found',
           data: null
         })
       }
@@ -46,7 +46,7 @@ class GetCouponService implements IGetCouponService {
       if (!tokenValidation.valid) {
         return RequestUtil.buildResponse({
           statusCode: 400,
-          message: tokenValidation.error || 'Token do cupom inválido',
+          message: tokenValidation.error || 'Invalid coupon token',
           data: null
         })
       }
@@ -60,7 +60,7 @@ class GetCouponService implements IGetCouponService {
       if (new Date(tokenData.expiresAt) < new Date()) {
         return RequestUtil.buildResponse({
           statusCode: 400,
-          message: 'O cupom expirou',
+          message: 'Expired coupon',
           data: null
         })
       }
@@ -68,7 +68,7 @@ class GetCouponService implements IGetCouponService {
       if (coupon.used) {
         return RequestUtil.buildResponse({
           statusCode: 400,
-          message: 'O cupom já foi utilizado',
+          message: 'Coupon already used',
           data: null
         })
       }
@@ -78,7 +78,7 @@ class GetCouponService implements IGetCouponService {
 
       return RequestUtil.buildResponse({
         statusCode: 200,
-        message: 'Cupom recuperado com sucesso',
+        message: 'Succesfully recovered coupon',
         data: {
           ...coupon,
           qrCode: qrCodeData,
@@ -88,8 +88,8 @@ class GetCouponService implements IGetCouponService {
     } catch (error) {
       return RequestUtil.buildResponse({
         statusCode: 400,
-        message: error instanceof Error ? error.message : 'Ocorreu um erro interno no servidor',
-        data: { error: error instanceof Error ? error.message : 'Erro desconhecido' }
+        message: error instanceof Error ? error.message : 'Internal Server Error',
+        data: { error: error instanceof Error ? error.message : 'Unknown Error' }
       })
     }
   }

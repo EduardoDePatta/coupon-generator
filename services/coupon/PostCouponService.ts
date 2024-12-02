@@ -31,13 +31,12 @@ class PostCouponService implements IPostCouponService {
   constructor(private readonly validator: IValidatorUtil, private readonly auth: IAuthUtil) {}
   public async execute({ coupon, user }: PostCouponParams) {
     try {
-      this.validator.validateFields<Coupon>(coupon, ['userId', 'regionId', 'restaurantId', 'productCode', 'discountValue'], {
+      this.validator.validateFields<Coupon>(coupon, ['restaurantId', 'productCode', 'discountValue'], {
         discountValue: ValidationRules.isPositiveNumber,
-        userId: ValidationRules.isNonEmptyString,
-        regionId: ValidationRules.isNonEmptyString,
         restaurantId: ValidationRules.isNonEmptyString,
         productCode: ValidationRules.isNonEmptyString
       })
+      this.validator.validateFields(user, ['userId', 'regionId', 'email', 'active'])
 
       const couponId = uuidv4()
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
