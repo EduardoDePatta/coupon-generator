@@ -2,11 +2,13 @@ import { dynamoDb, Tables } from '../../db'
 import { BuildHttpResponse, IAuthUtil, IValidatorUtil, RequestUtil, ValidationRules } from './../../utils'
 import { v4 as uuidv4 } from 'uuid'
 import { Coupon } from './interfaces'
+import { User } from './../auth/interfaces'
 
 interface MakeTokenDataParams {
   coupon: Coupon
   couponId: string
   expiresAt: string
+  user: User
 }
 
 interface MakeItemToSaveParams {
@@ -14,15 +16,20 @@ interface MakeItemToSaveParams {
   couponId: string
   token: string
   expiresAt: string
+  user: User
 }
 
+interface PostCouponParams {
+  coupon: Coupon
+  user: User
+}
 export interface IPostCouponService {
-  execute(params: { coupon: Coupon }): Promise<BuildHttpResponse>
+  execute(params: PostCouponParams): Promise<BuildHttpResponse>
 }
 
 class PostCouponService implements IPostCouponService {
   constructor(private readonly validator: IValidatorUtil, private readonly auth: IAuthUtil) {}
-  public async execute({ coupon }: { coupon: Coupon }) {
+  public async execute({ coupon, user }: PostCouponParams) {
     try {
       this.validator.validateFields<Coupon>(coupon, ['userId', 'regionId', 'restaurantId', 'productCode', 'discountValue'], {
         discountValue: ValidationRules.isPositiveNumber,
@@ -34,10 +41,10 @@ class PostCouponService implements IPostCouponService {
 
       const couponId = uuidv4()
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      const tokenData = this.makeTokenData({ coupon, couponId, expiresAt })
+      const tokenData = this.makeTokenData({ coupon, couponId, expiresAt, user })
       const token = this.auth.generateHMACToken(tokenData)
 
-      const itemToSave = this.makeItemToSave({ coupon, couponId, token, expiresAt })
+      const itemToSave = this.makeItemToSave({ coupon, couponId, token, expiresAt, user })
 
       await dynamoDb.put({ TableName: Tables.COUPONS, Item: itemToSave }).promise()
 
@@ -55,11 +62,11 @@ class PostCouponService implements IPostCouponService {
     }
   }
 
-  private makeItemToSave({ coupon, couponId, token, expiresAt }: MakeItemToSaveParams): Coupon {
+  private makeItemToSave({ coupon, couponId, token, expiresAt, user }: MakeItemToSaveParams): Coupon {
     return {
-      userId: coupon.userId,
+      userId: user.userId,
       couponId,
-      regionId: coupon.regionId,
+      regionId: user.regionId,
       restaurantId: coupon.restaurantId,
       productCode: coupon.productCode,
       discountValue: coupon.discountValue,
@@ -69,10 +76,10 @@ class PostCouponService implements IPostCouponService {
     }
   }
 
-  private makeTokenData({ coupon, couponId, expiresAt }: MakeTokenDataParams) {
+  private makeTokenData({ coupon, couponId, expiresAt, user }: MakeTokenDataParams) {
     return {
-      userId: coupon.userId,
-      regionId: coupon.regionId,
+      userId: user.userId,
+      regionId: user.regionId,
       restaurantId: coupon.restaurantId,
       productCode: coupon.productCode,
       discountValue: coupon.discountValue,

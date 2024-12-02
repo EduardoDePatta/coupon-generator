@@ -10,7 +10,6 @@ const verifyTokenMiddleware = serviceFactory.verifyToken()
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
     [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event, user) => {
-      console.log('🚀 ~ [PATH.COUPON]:withAuthentication ~ user:', user)
       const getCouponService = serviceFactory.getCouponService()
       return await getCouponService.execute({
         couponId: event.queryStringParameters?.couponId,
@@ -19,11 +18,11 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
     })
   },
   [METHOD.POST]: {
-    [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event) => {
+    [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event, user) => {
       try {
         const coupon = RequestUtil.parseRequestBody(event)
         const postCouponService = serviceFactory.postCouponService()
-        return await postCouponService.execute({ coupon })
+        return await postCouponService.execute({ coupon, user })
       } catch (error) {
         return RequestUtil.buildResponse({
           statusCode: 400,
