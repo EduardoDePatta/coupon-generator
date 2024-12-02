@@ -73,7 +73,7 @@ class GetCouponService implements IGetCouponService {
         })
       }
 
-      const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?userId=${coupon.userId}&regionId=${coupon.regionId}&couponId=${couponId}}`
+      const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?userId=${coupon.userId}&regionId=${coupon.regionId}&couponId=${couponId}`
       const qrCodeData = QRCode.toDataURL(redeemUrl)
 
       return RequestUtil.buildResponse({
