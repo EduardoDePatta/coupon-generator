@@ -1,3 +1,3 @@
-export * from './getCoupon'
-export * from './postCoupon'
-export * from './redeemCoupon'
+export * from './GetCouponService'
+export * from './PostCouponService'
+export * from './RedeemCouponService'

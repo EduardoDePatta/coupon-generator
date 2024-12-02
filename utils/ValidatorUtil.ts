@@ -3,8 +3,12 @@ const ValidationRules = {
   isNonEmptyString: (value: any): string | null => (typeof value !== 'string' || value.trim() === '' ? 'must be a non-empty string' : null)
 }
 
-class ValidatorUtil {
-  static validateFields<T>(object: Partial<T>, requiredFields: (keyof T)[], customValidators: Record<string, (value: any) => string | null> = {}): void {
+interface IValidatorUtil {
+  validateFields<T>(object: Partial<T>, requiredFields: (keyof T)[], customValidators?: Record<string, (value: any) => string | null>): void
+}
+
+class ValidatorUtil implements IValidatorUtil {
+  validateFields<T>(object: Partial<T>, requiredFields: (keyof T)[], customValidators: Record<string, (value: any) => string | null> = {}): void {
     const missingFields = requiredFields.filter((field) => !object[field])
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
@@ -21,4 +25,4 @@ class ValidatorUtil {
   }
 }
 
-export { ValidatorUtil, ValidationRules }
+export { ValidatorUtil, ValidationRules, IValidatorUtil }

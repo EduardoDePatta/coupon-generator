@@ -1,13 +1,14 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { BuildHttpResponse, METHOD, PATH, RequestUtil } from '../utils'
-import { getCoupon, postCoupon, redeemCoupon } from '../services/coupon'
+import { AuthUtil, BuildHttpResponse, METHOD, PATH, RequestUtil } from '../utils'
+import { serviceFactory } from './../services/factory/ServiceFactory'
 
 type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildHttpResponse>
 
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
     [PATH.COUPON]: async (event) => {
-      return await getCoupon({
+      const getCouponService = serviceFactory.getCouponService()
+      return await getCouponService.execute({
         couponId: event.queryStringParameters?.couponId,
         regionId: event.queryStringParameters?.regionId
       })
@@ -17,7 +18,8 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
     [PATH.COUPON]: async (event) => {
       try {
         const coupon = RequestUtil.parseRequestBody(event)
-        return await postCoupon({ coupon })
+        const postCouponService = serviceFactory.postCouponService()
+        return await postCouponService.execute({ coupon })
       } catch (error) {
         return RequestUtil.buildResponse({
           statusCode: 400,
@@ -28,7 +30,9 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
     },
     [PATH.REDEEM]: async (event) => {
       try {
-        return await redeemCoupon({
+        const auth = new AuthUtil()
+        const redeemCouponService = serviceFactory.redeemCouponService()
+        return await redeemCouponService.execute({
           token: event.queryStringParameters?.token
         })
       } catch (error) {
