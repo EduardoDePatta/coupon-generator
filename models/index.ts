@@ -19,7 +19,7 @@ export interface ValidateEndpoint {
   path: PATH
 }
 
-export interface GetCouponsParams {
+export interface GetCouponParams {
   couponId?: string
   regionId?: string
 }

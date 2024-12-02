@@ -2,21 +2,16 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lamb
 import { config } from 'aws-sdk'
 import { METHOD, PATH, BuildResponse } from './models'
 import { buildResponse } from './utils/responseBuilder'
-import { getCoupons, postCoupon } from './services/couponService'
+import { getCoupon, postCoupon } from './services/coupon'
 
-config.update({
-  region: 'eu-north-1'
-})
+config.update({ region: 'eu-north-1' })
 
 type RouteHandler = (event: APIGatewayProxyEvent) => Promise<BuildResponse>
 
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
     [PATH.COUPON]: async (event) => {
-      return buildResponse({ statusCode: 200 })
-    },
-    [PATH.COUPONS]: async (event) => {
-      return await getCoupons({
+      return await getCoupon({
         couponId: event.queryStringParameters?.couponId,
         regionId: event.queryStringParameters?.regionId
       })
@@ -29,7 +24,6 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
         const coupon = JSON.parse(body || '{}')
         return await postCoupon({ coupon })
       } catch (error) {
-        console.error('Error Parsing Body:', error)
         return buildResponse({ statusCode: 400, body: { error: 'Invalid JSON body' } })
       }
     }
