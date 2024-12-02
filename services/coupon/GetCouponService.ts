@@ -4,8 +4,8 @@ import * as QRCode from 'qrcode'
 import { Coupon } from './interfaces'
 
 interface GetCouponParams {
+  userId?: string
   couponId?: string
-  regionId?: string
 }
 
 export interface IGetCouponService {
@@ -15,10 +15,10 @@ export interface IGetCouponService {
 class GetCouponService implements IGetCouponService {
   constructor(private readonly validator: IValidatorUtil, private readonly auth: IAuthUtil) {}
 
-  public async execute({ regionId, couponId }: GetCouponParams) {
+  public async execute({ userId, couponId }: GetCouponParams) {
     try {
-      this.validator.validateFields<GetCouponParams>({ regionId, couponId }, ['regionId', 'couponId'], {
-        regionId: ValidationRules.isNonEmptyString,
+      this.validator.validateFields<GetCouponParams>({ userId, couponId }, ['userId', 'couponId'], {
+        userId: ValidationRules.isNonEmptyString,
         couponId: ValidationRules.isNonEmptyString
       })
 
@@ -26,7 +26,7 @@ class GetCouponService implements IGetCouponService {
         .get({
           TableName: Tables.COUPONS,
           Key: {
-            regionId,
+            userId,
             couponId
           }
         })

@@ -10,7 +10,7 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
       const getCouponService = serviceFactory.getCouponService()
       return await getCouponService.execute({
         couponId: event.queryStringParameters?.couponId,
-        regionId: event.queryStringParameters?.regionId
+        userId: event.queryStringParameters?.userId
       })
     }
   },

@@ -57,8 +57,12 @@ class PostCouponService implements IPostCouponService {
 
   private makeItemToSave({ coupon, couponId, token, expiresAt }: MakeItemToSaveParams): Coupon {
     return {
-      ...coupon,
+      userId: coupon.userId,
       couponId,
+      regionId: coupon.regionId,
+      restaurantId: coupon.restaurantId,
+      productCode: coupon.productCode,
+      discountValue: coupon.discountValue,
       token,
       expiresAt,
       used: false

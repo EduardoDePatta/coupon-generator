@@ -4,7 +4,7 @@ interface Coupon {
   restaurantId: string
   productCode: string
   discountValue: number
-  couponId?: string
+  couponId: string
   token?: string
   expiresAt?: string
   used?: boolean
