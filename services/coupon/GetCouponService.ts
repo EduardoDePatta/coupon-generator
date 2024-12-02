@@ -1,6 +1,6 @@
 import { dynamoDb, Tables } from '../../db'
 import { BuildHttpResponse, IAuthUtil, IValidatorUtil, RequestUtil, ValidationRules } from '../../utils'
-import * as QRCode from 'qrcode'
+import { toDataURL } from 'qrcode'
 import { Coupon } from './interfaces'
 
 interface GetCouponParams {
@@ -74,7 +74,7 @@ class GetCouponService implements IGetCouponService {
       }
 
       const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?userId=${coupon.userId}&regionId=${coupon.regionId}&couponId=${couponId}`
-      const qrCodeData = QRCode.toDataURL(redeemUrl)
+      const qrCodeData = await toDataURL(redeemUrl)
 
       return RequestUtil.buildResponse({
         statusCode: 200,
