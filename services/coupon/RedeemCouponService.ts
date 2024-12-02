@@ -1,12 +1,14 @@
 import { dynamoDb, Tables } from '../../db'
-import { BuildHttpResponse, IAuthUtil, RequestUtil } from './../../utils'
+import { BuildHttpResponse, IAuthUtil, IValidatorUtil, RequestUtil, ValidationRules } from './../../utils'
 import { Coupon } from './interfaces'
 
 enum ErrorType {
   ConditionalCheckFailedException = 'ConditionalCheckFailedException'
 }
 export interface RedeemCouponParams {
-  token?: string
+  userId?: string
+  regionId?: string
+  couponId?: string
 }
 
 export interface IRedeemCouponService {
@@ -14,34 +16,28 @@ export interface IRedeemCouponService {
 }
 
 class RedeemCouponService implements IRedeemCouponService {
-  constructor(private auth: IAuthUtil) {}
-  public async execute({ token }: { token?: string }) {
+  constructor(private readonly validator: IValidatorUtil, private readonly auth: IAuthUtil) {}
+  public async execute({ couponId, regionId, userId }: RedeemCouponParams) {
     try {
-      if (!token) {
-        return RequestUtil.buildResponse({
-          statusCode: 400,
-          message: 'Token is required',
-          data: null
+      this.validator.validateFields({ couponId, regionId, userId }, ['couponId', 'regionId', 'userId'], {
+        couponId: ValidationRules.isNonEmptyString,
+        regionId: ValidationRules.isNonEmptyString,
+        userId: ValidationRules.isNonEmptyString
+      })
+
+      const couponResponse = await dynamoDb
+        .get({
+          TableName: Tables.COUPONS,
+          Key: {
+            userId,
+            couponId
+          }
         })
-      }
+        .promise()
 
-      const tokenValidation = this.auth.validateHMACToken(token)
+      const coupon = couponResponse.Item
 
-      if (!tokenValidation.valid) {
-        return RequestUtil.buildResponse({
-          statusCode: 400,
-          message: tokenValidation.error || 'Invalid token',
-          data: null
-        })
-      }
-
-      const tokenData = tokenValidation.data as Coupon
-
-      if (!tokenData.expiresAt) {
-        throw new Error('Token does not contain expiration date')
-      }
-
-      if (new Date(tokenData.expiresAt) < new Date()) {
+      if (!coupon || !coupon.createdAt || new Date(coupon.expiresAt) < new Date()) {
         return RequestUtil.buildResponse({
           statusCode: 400,
           message: 'Coupon has expired',
@@ -53,8 +49,8 @@ class RedeemCouponService implements IRedeemCouponService {
         .update({
           TableName: Tables.COUPONS,
           Key: {
-            regionId: tokenData.regionId,
-            couponId: tokenData.couponId
+            userId: coupon.userId,
+            couponId: coupon.couponId
           },
           UpdateExpression: 'SET used = :used',
           ExpressionAttributeValues: {
@@ -69,9 +65,9 @@ class RedeemCouponService implements IRedeemCouponService {
         statusCode: 200,
         message: 'Coupon redeemed successfully',
         data: {
-          userId: tokenData.userId,
-          regionId: tokenData.regionId,
-          couponId: tokenData.couponId,
+          userId: coupon.userId,
+          regionId: coupon.regionId,
+          couponId: coupon.couponId,
           used: true
         }
       })

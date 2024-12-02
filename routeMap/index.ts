@@ -32,7 +32,9 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
       try {
         const redeemCouponService = serviceFactory.redeemCouponService()
         return await redeemCouponService.execute({
-          token: event.queryStringParameters?.token
+          couponId: event.queryStringParameters?.couponId,
+          regionId: event.queryStringParameters?.regionId,
+          userId: event.queryStringParameters?.userId
         })
       } catch (error) {
         return RequestUtil.buildResponse({

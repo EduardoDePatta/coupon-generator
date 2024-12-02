@@ -16,14 +16,11 @@ class GetCouponService implements IGetCouponService {
   constructor(private readonly validator: IValidatorUtil, private readonly auth: IAuthUtil) {}
 
   public async execute({ userId, couponId }: GetCouponParams) {
-    console.log('🚀 ~ GetCouponService ~ execute ~ couponId:', couponId)
-    console.log('🚀 ~ GetCouponService ~ execute ~ userId:', userId)
     try {
       this.validator.validateFields<GetCouponParams>({ userId, couponId }, ['userId', 'couponId'], {
         userId: ValidationRules.isNonEmptyString,
         couponId: ValidationRules.isNonEmptyString
       })
-      console.log('passou aqui')
 
       const response = await dynamoDb
         .get({
@@ -34,7 +31,6 @@ class GetCouponService implements IGetCouponService {
           }
         })
         .promise()
-      console.log('🚀 ~ GetCouponService ~ execute ~ response:', response)
 
       if (!response.Item) {
         return RequestUtil.buildResponse({
@@ -45,7 +41,6 @@ class GetCouponService implements IGetCouponService {
       }
 
       const coupon = response.Item
-      console.log('🚀 ~ GetCouponService ~ execute ~ coupon:', coupon)
 
       const tokenValidation = this.auth.validateHMACToken(coupon.token)
       if (!tokenValidation.valid) {
@@ -57,15 +52,12 @@ class GetCouponService implements IGetCouponService {
       }
 
       const tokenData = tokenValidation.data as Coupon
-      console.log('🚀 ~ GetCouponService ~ execute ~ tokenData:', tokenData)
 
       if (!tokenData.expiresAt) {
-        console.log('entrou aqui')
         throw new Error('O token não contém data de expiração')
       }
 
       if (new Date(tokenData.expiresAt) < new Date()) {
-        console.log('entrou 2')
         return RequestUtil.buildResponse({
           statusCode: 400,
           message: 'O cupom expirou',
@@ -81,15 +73,8 @@ class GetCouponService implements IGetCouponService {
         })
       }
 
-      const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?token=${encodeURIComponent(coupon.token)}`
-      console.log('🚀 ~ GetCouponService ~ execute ~ redeemUrl:', redeemUrl)
-      console.log('length', redeemUrl.length)
-      const qrCodeData = QRCode.toDataURL(redeemUrl, (err, data) => {
-        if (err) {
-          console.log(err, 'aaaaaaaaaaa')
-        }
-      })
-      console.log('🚀 ~ GetCouponService ~ execute ~ qrCodeData:', qrCodeData)
+      const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?userId=${coupon.userId}&regionId=${coupon.regionId}&couponId=${couponId}}`
+      const qrCodeData = QRCode.toDataURL(redeemUrl)
 
       return RequestUtil.buildResponse({
         statusCode: 200,
@@ -101,7 +86,6 @@ class GetCouponService implements IGetCouponService {
         }
       })
     } catch (error) {
-      console.log('🚀 ~ GetCouponService ~ execute ~ error:', error)
       return RequestUtil.buildResponse({
         statusCode: 400,
         message: error instanceof Error ? error.message : 'Ocorreu um erro interno no servidor',

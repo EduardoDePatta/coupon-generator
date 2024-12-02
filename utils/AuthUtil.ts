@@ -38,7 +38,6 @@ class AuthUtil implements IAuthUtil {
     try {
       const payload = this.decompressToken(compressedPayload)
       const data = JSON.parse(payload)
-      console.log('🚀 ~ AuthUtil ~ validateHMACToken ~ data:', data)
       return { valid: true, data }
     } catch (error) {
       return { valid: false, error: 'Invalid token payload' }

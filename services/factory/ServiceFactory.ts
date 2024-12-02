@@ -19,7 +19,7 @@ class ServiceFactory {
   }
 
   public redeemCouponService(): IRedeemCouponService {
-    return new RedeemCouponService(this.auth)
+    return new RedeemCouponService(this.validator, this.auth)
   }
 }
 
