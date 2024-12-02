@@ -63,7 +63,6 @@ export const postCoupon = async ({ coupon }: { coupon: Coupon }) => {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     const tokenData = makeTokenData({ coupon, couponId, expiresAt })
     const token = AuthUtil.generateHMACToken(tokenData)
-    console.log('🚀 ~ postCoupon ~ token:', token)
 
     const itemToSave = makeItemToSave({ coupon, couponId, token, expiresAt })
 

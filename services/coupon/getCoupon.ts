@@ -35,10 +35,7 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
 
     const coupon = response.Item
 
-    console.log('Retrieved Token:', coupon.token)
-    console.log('HMAC_SECRET (Validation):', process.env.HMAC_SECRET)
     const tokenValidation = AuthUtil.validateHMACToken(coupon.token)
-    console.log('🚀 ~ getCoupon ~ tokenValidation:', tokenValidation)
     if (!tokenValidation.valid) {
       return RequestUtil.buildResponse({
         statusCode: 400,

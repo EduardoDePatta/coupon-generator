@@ -1,6 +1,5 @@
 const ValidationRules = {
   isPositiveNumber: (value: any): string | null => (typeof value !== 'number' || value <= 0 ? 'must be a positive number' : null),
-
   isNonEmptyString: (value: any): string | null => (typeof value !== 'string' || value.trim() === '' ? 'must be a non-empty string' : null)
 }
 
