@@ -10,22 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v2
         with:
           node-version: '20'
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
+
       - name: npm install
         env:
           CI: true
         run: |
           npm ci
-      - name: deploy
+
+      - name: Build and Package Lambda
+        env:
+          HMAC_SECRET: ${{ secrets.HMAC_SECRET }}
         run: |
+          echo "Building application..."
           npx ncc build index.ts
+          echo "Packaging Lambda function..."
           zip -j deploy.zip ./dist/*
+
+      - name: Deploy to AWS Lambda
+        env:
+          HMAC_SECRET: ${{ secrets.HMAC_SECRET }}
+        run: |
           aws lambda update-function-code --function-name=serverless --zip-file=fileb://deploy.zip

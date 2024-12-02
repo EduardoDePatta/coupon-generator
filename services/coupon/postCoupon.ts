@@ -1,5 +1,5 @@
 import { dynamoDb, Tables } from '../../db'
-import { RequestUtil, ValidationRules, ValidatorUtil } from './../../utils'
+import { AuthUtil, RequestUtil, ValidationRules, ValidatorUtil } from './../../utils'
 import { v4 as uuidv4 } from 'uuid'
 export interface Coupon {
   userId: string
@@ -9,20 +9,25 @@ export interface Coupon {
   discountValue: number
   couponId?: string
   token?: string
+  expiresAt?: string
+  used?: boolean
 }
 
 interface MakeTokenDataParams {
   coupon: Coupon
   couponId: string
+  expiresAt: string
 }
-function makeTokenData({ coupon, couponId }: MakeTokenDataParams) {
+
+function makeTokenData({ coupon, couponId, expiresAt }: MakeTokenDataParams) {
   return {
     userId: coupon.userId,
     regionId: coupon.regionId,
     restaurantId: coupon.restaurantId,
     productCode: coupon.productCode,
     discountValue: coupon.discountValue,
-    couponId
+    couponId,
+    expiresAt
   }
 }
 
@@ -30,13 +35,17 @@ interface MakeItemToSaveParams {
   coupon: Coupon
   couponId: string
   token: string
+  expiresAt: string
 }
-function makeItemToSave({ coupon, couponId, token }: MakeItemToSaveParams) {
+
+function makeItemToSave({ coupon, couponId, token, expiresAt }: MakeItemToSaveParams): Coupon {
   return {
     ...coupon,
     couponId,
     regionId: coupon.regionId,
-    token
+    token,
+    expiresAt,
+    used: false
   }
 }
 
@@ -51,11 +60,11 @@ export const postCoupon = async ({ coupon }: { coupon: Coupon }) => {
     })
 
     const couponId = uuidv4()
-    const tokenData = makeTokenData({ coupon, couponId })
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    const tokenData = makeTokenData({ coupon, couponId, expiresAt })
+    const token = AuthUtil.generateHMACToken(tokenData)
 
-    const token = Buffer.from(JSON.stringify(tokenData)).toString('base64')
-
-    const itemToSave = makeItemToSave({ coupon, couponId, token })
+    const itemToSave = makeItemToSave({ coupon, couponId, token, expiresAt })
 
     await dynamoDb.put({ TableName: Tables.COUPONS, Item: itemToSave }).promise()
 
