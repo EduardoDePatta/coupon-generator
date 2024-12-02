@@ -36,6 +36,7 @@ class RedeemCouponService implements IRedeemCouponService {
         .promise()
 
       const coupon = couponResponse.Item
+      console.log('🚀 ~ RedeemCouponService ~ execute ~ coupon:', coupon)
 
       if (!coupon || !coupon.createdAt || new Date(coupon.expiresAt) < new Date()) {
         return RequestUtil.buildResponse({
