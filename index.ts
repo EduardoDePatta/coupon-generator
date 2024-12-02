@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda'
 import { config } from 'aws-sdk'
-import { getCoupon, postCoupon } from './services/coupon'
+import { getCoupon, postCoupon, redeemCoupon } from './services/coupon'
 import { BuildHttpResponse, BuildResponse, METHOD, PATH, RequestUtil } from './utils'
 
 config.update({ region: 'eu-north-1' })
@@ -21,6 +21,17 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
       try {
         const coupon = RequestUtil.parseRequestBody(event)
         return await postCoupon({ coupon })
+      } catch (error) {
+        return RequestUtil.buildResponse({
+          statusCode: 400,
+          message: 'Invalid JSON data',
+          data: {}
+        })
+      }
+    },
+    [PATH.REDEEM]: async (event) => {
+      try {
+        return await redeemCoupon({ token: event.queryStringParameters?.token })
       } catch (error) {
         return RequestUtil.buildResponse({
           statusCode: 400,
