@@ -8,8 +8,6 @@ export interface GetCouponParams {
 }
 
 export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
-  console.log('🚀 ~ getCoupon ~ couponId:', couponId)
-  console.log('🚀 ~ getCoupon ~ regionId:', regionId)
   try {
     ValidatorUtil.validateFields<GetCouponParams>({ regionId, couponId }, ['regionId', 'couponId'], {
       regionId: ValidationRules.isNonEmptyString,
@@ -69,11 +67,8 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
     console.log('chegou aqui')
     console.log(coupon)
 
-    // rm essa url daqui
-    const redeemUrl = `https://l3fvh570eh.execute-api.eu-north-1.amazonaws.com/production/redeem?token=${encodeURIComponent(coupon.token)}`
-    console.log('🚀 ~ getCoupon ~ redeemUrl:', redeemUrl)
+    const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?token=${encodeURIComponent(coupon.token)}`
     const qrCodeData = await QRCode.toDataURL(redeemUrl)
-    console.log('🚀 ~ getCoupon ~ qrCodeData:', qrCodeData)
 
     return RequestUtil.buildResponse({
       statusCode: 200,
@@ -85,7 +80,6 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
       }
     })
   } catch (error) {
-    console.log('🚀 ~ getCoupon ~ error:', error)
     return RequestUtil.buildResponse({
       statusCode: 400,
       message: error instanceof Error ? error.message : 'Internal server error occurred',
