@@ -30,7 +30,6 @@ const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
     },
     [PATH.REDEEM]: async (event) => {
       try {
-        const auth = new AuthUtil()
         const redeemCouponService = serviceFactory.redeemCouponService()
         return await redeemCouponService.execute({
           token: event.queryStringParameters?.token

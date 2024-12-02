@@ -60,10 +60,12 @@ class GetCouponService implements IGetCouponService {
       console.log('🚀 ~ GetCouponService ~ execute ~ tokenData:', tokenData)
 
       if (!tokenData.expiresAt) {
+        console.log('entrou aqui')
         throw new Error('O token não contém data de expiração')
       }
 
       if (new Date(tokenData.expiresAt) < new Date()) {
+        console.log('entrou 2')
         return RequestUtil.buildResponse({
           statusCode: 400,
           message: 'O cupom expirou',
@@ -80,7 +82,14 @@ class GetCouponService implements IGetCouponService {
       }
 
       const redeemUrl = `${process.env.SERVERLESS_URL}/redeem?token=${encodeURIComponent(coupon.token)}`
-      const qrCodeData = await QRCode.toDataURL(redeemUrl)
+      console.log('🚀 ~ GetCouponService ~ execute ~ redeemUrl:', redeemUrl)
+      console.log('length', redeemUrl.length)
+      const qrCodeData = QRCode.toDataURL(redeemUrl, (err, data) => {
+        if (err) {
+          console.log(err, 'aaaaaaaaaaa')
+        }
+      })
+      console.log('🚀 ~ GetCouponService ~ execute ~ qrCodeData:', qrCodeData)
 
       return RequestUtil.buildResponse({
         statusCode: 200,
