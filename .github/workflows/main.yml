@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to AWS Lambda
 
 on:
   push:
@@ -9,23 +9,31 @@ jobs:
   deploy_lambda:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Checkout Repository Code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v2
         with:
           node-version: '20'
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-      - name: npm install
+      - name: Install Dependencies
         env:
           CI: true
         run: |
           npm ci
-      - name: deploy
+
+      - name: Build Project and Package Artifacts
         run: |
           npx ncc build index.ts
           zip -j deploy.zip ./dist/*
+
+      - name: Deploy to AWS Lambda
+        run: |
           aws lambda update-function-code --function-name=serverless --zip-file=fileb://deploy.zip
