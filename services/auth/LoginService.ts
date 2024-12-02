@@ -21,27 +21,39 @@ class LoginService implements ILoginService {
       })
 
       const response = await dynamoDb
-        .get({
+        .query({
           TableName: Tables.USERS,
-          Key: { email }
+          IndexName: 'email-index',
+          KeyConditionExpression: 'email = :email',
+          ExpressionAttributeValues: {
+            ':email': email
+          }
         })
         .promise()
 
-      if (!response.Item) {
+      if (!response.Items || response.Items.length === 0) {
         return RequestUtil.buildResponse({
           statusCode: 404,
-          message: 'Usuário não encontrado',
+          message: 'User not found',
           data: null
         })
       }
 
-      const user = response.Item
+      if (response.Items.length > 1) {
+        return RequestUtil.buildResponse({
+          statusCode: 404,
+          message: 'Duplicated register',
+          data: null
+        })
+      }
+
+      const user = response.Items[0]
 
       const isPasswordValid = await this.auth.comparePassword(password, user.password)
       if (!isPasswordValid) {
         return RequestUtil.buildResponse({
           statusCode: 401,
-          message: 'Credenciais inválidas',
+          message: 'Invalid Credentials',
           data: null
         })
       }
@@ -54,13 +66,13 @@ class LoginService implements ILoginService {
 
       return RequestUtil.buildResponse({
         statusCode: 200,
-        message: 'Login realizado com sucesso',
+        message: 'Successfully logged in',
         data: { token }
       })
     } catch (error) {
       return RequestUtil.buildResponse({
         statusCode: 500,
-        message: error instanceof Error ? error.message : 'Erro interno no servidor',
+        message: error instanceof Error ? error.message : 'Internal Server Error',
         data: null
       })
     }
