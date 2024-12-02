@@ -80,6 +80,7 @@ export const getCoupon = async ({ regionId, couponId }: GetCouponParams) => {
       }
     })
   } catch (error) {
+    console.log('🚀 ~ getCoupon ~ error:', error)
     return RequestUtil.buildResponse({
       statusCode: 400,
       message: error instanceof Error ? error.message : 'Internal server error occurred',
