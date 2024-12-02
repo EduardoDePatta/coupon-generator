@@ -10,6 +10,7 @@ const verifyTokenMiddleware = serviceFactory.verifyToken()
 const routeMap: { [method: string]: { [path: string]: RouteHandler } } = {
   [METHOD.GET]: {
     [PATH.COUPON]: withAuthentication(verifyTokenMiddleware, async (event, user) => {
+      console.log('🚀 ~ [PATH.COUPON]:withAuthentication ~ user:', user)
       const getCouponService = serviceFactory.getCouponService()
       return await getCouponService.execute({
         couponId: event.queryStringParameters?.couponId,

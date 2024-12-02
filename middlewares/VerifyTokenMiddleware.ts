@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { AuthUtil, BuildHttpResponse, IAuthUtil, RequestUtil } from '../utils'
+import { BuildHttpResponse, IAuthUtil, RequestUtil } from '../utils'
 
 interface IVerifyTokenMiddleware {
   execute(event: APIGatewayProxyEvent): Promise<BuildHttpResponse | { valid: true; user: object } | { valid: false; error: string }>
